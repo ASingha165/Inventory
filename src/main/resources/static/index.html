@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Inventory Studio · Stock, made simple</title>
+    <link rel="stylesheet" href="/app.css" />
+    <script defer src="/app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="/">▦ Inventory<span>STUDIO / OPERATIONS</span></a
+      ><span class="pill">Your stock. In focus.</span
+      ><button class="quiet" id="logout" hidden>Sign out</button>
+    </header>
+    <main>
+      <section id="auth" class="auth-layout">
+        <div>
+          <p class="eyebrow">A CLEARER WAY TO MANAGE STOCK</p>
+          <h1>Less guesswork.<br />More in stock.</h1>
+          <p class="lead">
+            Keep products organized, track every stock movement, and see what
+            needs your attention.
+          </p>
+          <div class="currency-art" aria-hidden="true">
+            <span>▦</span><span>↗</span><span>✓</span>
+          </div>
+          <p class="muted">
+            Your workspace is private. Start with your first product.
+          </p>
+        </div>
+        <section class="card">
+          <div class="tabs">
+            <button id="loginTab" class="selected">Sign in</button
+            ><button id="signupTab">Create account</button>
+          </div>
+          <h2 id="authTitle">Welcome back</h2>
+          <form id="authForm">
+            <label id="nameLabel" hidden
+              >Full name<input
+                id="name"
+                minlength="2"
+                maxlength="80"
+                autocomplete="name" /></label
+            ><label
+              >Email address<input
+                id="email"
+                type="email"
+                maxlength="254"
+                required
+                autocomplete="email" /></label
+            ><label
+              >Password<input
+                id="password"
+                type="password"
+                minlength="10"
+                maxlength="72"
+                required
+                autocomplete="current-password" /></label
+            ><button id="authSubmit" class="primary">Sign in →</button>
+          </form>
+          <p class="small muted">
+            Use at least 10 characters for your password.
+          </p>
+        </section>
+      </section>
+      <section id="dashboard" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow" id="workspace">YOUR WORKSPACE</p>
+            <h1>Stock overview</h1>
+            <p class="muted">
+              Every product. Every movement. All in one place.
+            </p>
+          </div>
+          <button id="add" class="primary">+ Add product</button>
+        </div>
+        <div class="wallets" id="metrics"></div>
+        <section class="card">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">PRODUCT CATALOG</p>
+              <h2>Your inventory</h2>
+            </div>
+            <label class="search"
+              >Search products<input
+                id="search"
+                type="search"
+                placeholder="Name, SKU, category…" /></label
+            ><label
+              >Stock status<select id="filter">
+                <option value="all">All stock</option>
+                <option value="low">Low stock</option>
+                <option value="out">Out of stock</option>
+              </select></label
+            ><button id="export" class="quiet">Export CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product / SKU</th>
+                  <th>Category</th>
+                  <th>On hand</th>
+                  <th>Unit price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products"></tbody>
+            </table>
+          </div>
+          <div id="empty" class="empty" hidden>
+            <h2>A fresh start for your stock.</h2>
+            <p class="muted">
+              Add a product to begin tracking quantities and movements.
+            </p>
+          </div>
+        </section>
+        <section class="card history">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">A TRAIL YOU CAN FOLLOW</p>
+              <h2>Stock movements</h2>
+            </div>
+            <button id="refresh" class="quiet">↻ Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Product</th>
+                  <th>Reason</th>
+                  <th>Change</th>
+                  <th>Stock after</th>
+                </tr>
+              </thead>
+              <tbody id="movements"></tbody>
+            </table>
+          </div>
+          <p class="muted small">
+            Most recent 100 movements. Stock history stays available after a
+            product is deleted.
+          </p>
+        </section>
+      </section>
+      <dialog id="productDialog">
+        <h2 id="productTitle">Add product</h2>
+        <form id="productForm">
+          <div class="row">
+            <label
+              >SKU<input
+                id="sku"
+                pattern="[A-Za-z0-9_-]+"
+                maxlength="60"
+                required
+                placeholder="SKU-001" /></label
+            ><label
+              >Category<input
+                id="category"
+                maxlength="60"
+                required
+                placeholder="General"
+            /></label>
+          </div>
+          <label
+            >Product name<input id="productName" maxlength="120" required
+          /></label>
+          <div class="row">
+            <label
+              >Unit price (INR)<input
+                id="price"
+                type="number"
+                min="0"
+                max="99999999.99"
+                step="0.01"
+                required
+                value="0" /></label
+            ><label
+              >Opening stock<input
+                id="quantity"
+                type="number"
+                min="0"
+                max="1000000"
+                step="1"
+                required
+                value="0"
+            /></label>
+          </div>
+          <label
+            >Low-stock threshold<input
+              id="reorderLevel"
+              type="number"
+              min="0"
+              max="1000000"
+              step="1"
+              required
+              value="5"
+          /></label>
+          <p class="muted small" id="quantityHint">
+            Future quantity changes are recorded as stock adjustments.
+          </p>
+          <div class="row dialog-actions">
+            <button type="button" class="quiet" data-close="productDialog">
+              Cancel</button
+            ><button class="primary">Save product</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="adjustDialog">
+        <h2>Adjust stock</h2>
+        <p id="adjustProduct"></p>
+        <form id="adjustForm">
+          <label
+            >Change in units<input
+              id="delta"
+              type="number"
+              min="-1000000"
+              max="1000000"
+              step="1"
+              required
+              placeholder="e.g. 20 or -5" /></label
+          ><label
+            >Reason<input
+              id="reason"
+              maxlength="200"
+              required
+              placeholder="Shipment received, sale, damaged stock…"
+          /></label>
+          <p class="muted small">Use a negative number to remove stock.</p>
+          <div class="row dialog-actions">
+            <button type="button" class="quiet" data-close="adjustDialog">
+              Cancel</button
+            ><button class="primary">Record adjustment</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog id="deleteDialog">
+        <h2>Delete product?</h2>
+        <p id="deleteProduct"></p>
+        <p class="muted">
+          Stock must be zero. The movement history will be retained.
+        </p>
+        <div class="row dialog-actions">
+          <button class="quiet" data-close="deleteDialog">Cancel</button
+          ><button id="confirmDelete" class="primary">Delete product</button>
+        </div>
+      </dialog>
+      <p id="notice" role="status" aria-live="polite" hidden></p>
+    </main>
+    <footer>
+      Inventory Studio / A place for everything · <span id="year"></span>
+    </footer>
+  </body>
+</html>

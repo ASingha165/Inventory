@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# Local database and secrets
+data/
+.env
+*.db
+*.mv.db
+*.trace.db
