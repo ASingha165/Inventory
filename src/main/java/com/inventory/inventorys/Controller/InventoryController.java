@@ -1,46 +1,58 @@
 package com.inventory.inventorys.Controller;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.inventory.inventorys.model.Inventory;
-import com.inventory.inventorys.repository.InventoryRepository;
-import java.util.List;
+
+import com.inventory.inventorys.service.InventoryService;
+import com.inventory.inventorys.service.InventoryService.*;
+import jakarta.validation.Valid;
+import java.security.Principal;
+import java.util.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
 @RestController
+@RequestMapping("/api")
 public class InventoryController {
-    private final InventoryRepository inventoryRepository;
+  private final InventoryService service;
 
-    public InventoryController(InventoryRepository inventoryRepository) {
-        this.inventoryRepository = inventoryRepository;
-    }
+  public InventoryController(InventoryService service) {
+    this.service = service;
+  }
 
-    // Get all inventory items
-    @GetMapping
-    public List<Inventory> getAllInventory() {
-        return inventoryRepository.findAll();
-    }
+  @GetMapping("/products")
+  public List<ProductView> list(Principal user) {
+    return service.list(user.getName());
+  }
 
-    // Add more endpoints for CRUD operations as needed
-    @PostMapping
-    public Inventory createInventory(Inventory inventory) {
-        return inventoryRepository.save(inventory);
-    }
-    @GetMapping("/{id}")
-    public Inventory getInventoryById(@PathVariable Long id) {
-        return inventoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Inventory item not found"));
-    }
-    @PutMapping("/{id}")
-    public Inventory updateInventory(@PathVariable Long id, Inventory updatedInventory) {
-        Inventory inventory = inventoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Inventory item not found"));
-        inventory.setName(updatedInventory.getName());
-        inventory.setQuantity(updatedInventory.getQuantity());
-        inventory.setPrice(updatedInventory.getPrice());
-        return inventoryRepository.save(inventory);
-    }
-    @DeleteMapping("/{id}")
-    public void deleteInventory(@PathVariable Long id) {
-        inventoryRepository.deleteById(id);
-    }
+  @GetMapping("/products/{id}")
+  public ProductView get(@PathVariable Long id, Principal user) {
+    return service.view(service.owned(id, user.getName()));
+  }
+
+  @PostMapping("/products")
+  @ResponseStatus(HttpStatus.CREATED)
+  public ProductView create(@Valid @RequestBody ProductInput input, Principal user) {
+    return service.create(user.getName(), input);
+  }
+
+  @PutMapping("/products/{id}")
+  public ProductView update(
+      @PathVariable Long id, @Valid @RequestBody ProductInput input, Principal user) {
+    return service.update(id, user.getName(), input);
+  }
+
+  @PostMapping("/products/{id}/adjustments")
+  public ProductView adjust(
+      @PathVariable Long id, @Valid @RequestBody Adjustment input, Principal user) {
+    return service.adjust(id, user.getName(), input);
+  }
+
+  @DeleteMapping("/products/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable Long id, @RequestParam Long version, Principal user) {
+    service.delete(id, user.getName(), version);
+  }
+
+  @GetMapping("/movements")
+  public Object movements(Principal user) {
+    return service.history(user.getName());
+  }
 }
